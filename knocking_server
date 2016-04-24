@@ -1,0 +1,65 @@
+#!/bin/bash
+# PortKnocking using iptables n' ip6tables
+# Diego Neves <diego@diegoneves.eti.br>
+# 2016-04-20
+# https://github.com/diegoaceneves/firewall
+# GNU/GPL 3.0 :D
+
+
+#PORTS
+#PS1.: Don't use opened ports
+#PS2.: For security, don't use sequencial ports (101, 102, 103, 104) use (1000, 2000, 3000, 4000)
+P1=1000
+P2=2000
+P3=3000
+P4=4000
+
+#DEFAULT :22
+SSHPORT=22
+
+#STEP TIME (Time to awating the next step, in seconds)
+STEPTIME=15
+
+#OPENED TIME (Time to awating conection from remote host, in seconds)
+OPENEDTIME=60
+
+IPTABLES=/sbin/iptables
+IP6TABLES=/sbin/ip6tables
+
+
+$IPTABLES -N STEP2
+$IP6TABLES -N STEP2
+$IPTABLES -N STEP3
+$IP6TABLES -N STEP3
+$IPTABLES -N STEP4
+$IP6TABLES -N STEP4
+
+$IPTABLES -A STEP2 -m recent --name FASE1 --remove
+$IP6TABLES -A STEP2 -m recent --name FASE1 --remove
+$IPTABLES -A STEP3 -m recent --name FASE2 --remove
+$IP6TABLES -A STEP3 -m recent --name FASE2 --remove
+$IPTABLES -A STEP4 -m recent --name FASE3 --remove
+$IP6TABLES -A STEP4 -m recent --name FASE3 --remove
+
+$IPTABLES -A STEP2 -m recent --name FASE2 --set
+$IP6TABLES -A STEP2 -m recent --name FASE2 --set
+$IPTABLES -A STEP3 -m recent --name FASE3 --set
+$IP6TABLES -A STEP3 -m recent --name FASE3 --set
+$IPTABLES -A STEP4 -m recent --name FASE4 --set
+$IP6TABLES -A STEP4 -m recent --name FASE4 --set
+
+$IPTABLES -A INPUT -m recent --update --name FASE1
+$IP6TABLES -A INPUT -m recent --update --name FASE1
+
+
+$IPTABLES -A INPUT -p tcp --dport $P1 -m recent --set --name FASE1
+$IP6TABLES -A INPUT -p tcp --dport $P1 -m recent --set --name FASE1
+$IPTABLES -A INPUT -p tcp --dport $P2 -m recent --rcheck --seconds $STEPTIME --name FASE1 -j STEP2
+$IP6TABLES -A INPUT -p tcp --dport $P2 -m recent --rcheck --seconds $STEPTIME --name FASE1 -j STEP2
+$IPTABLES -A INPUT -p tcp --dport $P3 -m recent --rcheck --seconds $STEPTIME --name FASE2 -j STEP3
+$IP6TABLES -A INPUT -p tcp --dport $P3 -m recent --rcheck --seconds $STEPTIME --name FASE2 -j STEP3
+$IPTABLES -A INPUT -p tcp --dport $P4 -m recent --rcheck --seconds $STEPTIME --name FASE3 -j STEP4
+$IP6TABLES -A INPUT -p tcp --dport $P4 -m recent --rcheck --seconds $STEPTIME --name FASE3 -j STEP4
+
+$IPTABLES -A INPUT -p tcp --dport $SSHPORT -m recent --rcheck --seconds $OPENEDTIME --name FASE4 -j ACCEPT
+$IP6TABLES -A INPUT -p tcp --dport $SSHPORT -m recent --rcheck --seconds $OPENEDTIME --name FASE4 -j ACCEPT

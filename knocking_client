@@ -1,0 +1,28 @@
+#!/bin/bash
+# PortKnocking Client - Used to open SSH port's on remote host
+# Diego Neves <diego@diegoneves.eti.br>
+# 2016-04-20
+# https://github.com/diegoaceneves/firewall
+# GNU/GPL 3.0 :D
+
+#Ports used on knocking
+PORTS=(1000 2000 3000 4000)
+USER=$2
+
+
+if [ -b $1 ]; then
+	echo "use {$0 host}"
+	exit 
+fi
+
+for i in "${PORTS[@]}"; do
+	wget $1:$i --connect-timeout=1 -t 1 > /dev/null 2> /dev/null
+	echo sending: $1:$i
+done
+
+#It's recommended to configure user in $HOME/.ssh/config 
+if [ -b $2 ]; then
+	ssh $2@$1
+else
+	ssh $1
+fi
