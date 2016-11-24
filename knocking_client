@@ -12,7 +12,7 @@
 
 
 #Ports used on knocking
-PORTS=(100 200 300 400)
+PORTS=(1000 2000 3000 4000)
 
 
 if [ -b $1 ]; then
@@ -26,8 +26,4 @@ for i in "${PORTS[@]}"; do
 done
 
 #It's recommended to configure user in $HOME/.ssh/config 
-#if [ -b $2 ]; then
-#	ssh $2@$1
-#else
 	ssh $1
-#fi
